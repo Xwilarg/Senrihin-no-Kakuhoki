@@ -1,4 +1,5 @@
-﻿using System;
+﻿using IronOcr;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -28,9 +29,9 @@ namespace Senrihin_no_Kakuhoki
             int sizeY = rect.bottom - rect.top;
             log.DisplayMessage(LogManager.LogLevel.Debug, "Window position: (" + rect.left + ";" + rect.top + "), window size: (" + sizeX + ";" + sizeY + ")");
             log.DisplayMessage(LogManager.LogLevel.Info, "Game window found!");
+            AutoOcr ocr = new AutoOcr();
             while (true)
             {
-                Thread.Sleep(5000);
                 Bitmap bmp = new Bitmap(sizeX, sizeY, PixelFormat.Format32bppArgb);
                 Graphics gfxBmp = Graphics.FromImage(bmp);
                 IntPtr hdcBitmap = gfxBmp.GetHdc();
@@ -38,7 +39,8 @@ namespace Senrihin_no_Kakuhoki
                 gfxBmp.ReleaseHdc(hdcBitmap);
                 gfxBmp.Dispose();
                 bmp.Save("Debug.bmp");
-                log.DisplayMessage(LogManager.LogLevel.Debug, "Saving image to Debug.bmp");
+                log.DisplayMessage(LogManager.LogLevel.Debug, "Text found on window: " + ocr.Read("Debug.bmp").Text);
+                Thread.Sleep(5000);
             }
         }
 
