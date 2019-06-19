@@ -47,8 +47,16 @@ namespace Senrihin_no_Kakuhoki
                     PrintWindow(window, hdcBitmap, 0);
                     gfxBmp.ReleaseHdc(hdcBitmap);
                     gfxBmp.Dispose();
-                    bmp.Clone(new Rectangle(startX, startY, textFinalSizeX, textFinalSizeY), PixelFormat.Format32bppArgb).Save("Debug.bmp");
-                    log.DisplayMessage(LogManager.LogLevel.Debug, "Text found on window: " + ocr.Read("Debug.bmp").Text);
+                    Bitmap finalBmp = bmp.Clone(new Rectangle(startX, startY, textFinalSizeX, textFinalSizeY), PixelFormat.Format32bppArgb);
+                    int splitSizeX = textFinalSizeX / 4;
+                    finalBmp.Clone(new Rectangle(0, 0, splitSizeX, textFinalSizeY), PixelFormat.Format32bppArgb).Save("Image1.bmp");
+                    finalBmp.Clone(new Rectangle(splitSizeX, 0, splitSizeX, textFinalSizeY), PixelFormat.Format32bppArgb).Save("Image2.bmp");
+                    finalBmp.Clone(new Rectangle(splitSizeX * 2, 0, splitSizeX, textFinalSizeY), PixelFormat.Format32bppArgb).Save("Image3.bmp");
+                    finalBmp.Clone(new Rectangle(splitSizeX * 3, 0, splitSizeX, textFinalSizeY), PixelFormat.Format32bppArgb).Save("Image4.bmp");
+                    log.DisplayMessage(LogManager.LogLevel.Debug, "Text found on first pannel: " + ocr.Read("Image1.bmp").Text);
+                    log.DisplayMessage(LogManager.LogLevel.Debug, "Text found on second pannel: " + ocr.Read("Image2.bmp").Text);
+                    log.DisplayMessage(LogManager.LogLevel.Debug, "Text found on third pannel: " + ocr.Read("Image3.bmp").Text);
+                    log.DisplayMessage(LogManager.LogLevel.Debug, "Text found on fourth pannel: " + ocr.Read("Image4.bmp").Text);
                 } catch (ExternalException)
                 { }
                 Thread.Sleep(5000);
