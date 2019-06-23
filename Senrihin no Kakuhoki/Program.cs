@@ -13,41 +13,23 @@ namespace Senrihin_no_Kakuhoki
         private static int GetPlayers(LogManager log)
         {
             ConsoleKeyInfo keyInfo;
-            bool isKeyPressed = false;
-            int players = 0;
-            try
+            while (true)
             {
-                do
-                {
-                    keyInfo = Console.ReadKey();
-                    if (keyInfo.Key == ConsoleKey.NumPad1 || keyInfo.Key == ConsoleKey.NumPad2
-                        || keyInfo.Key == ConsoleKey.NumPad3 || keyInfo.Key == ConsoleKey.NumPad4)
-                    {
-                        isKeyPressed = true;
-                        log.DisplayMessage(LogManager.LogLevel.Info, "There are " + keyInfo.Key.ToString().Substring(6) + " player(s) in your session.");
-                    }
-                    Thread.Sleep(1000);
-                } while (isKeyPressed != true);
+                keyInfo = Console.ReadKey();
                 switch (keyInfo.Key)
                 {
                     case ConsoleKey.NumPad1:
-                        players = 1;
-                        break;
+                        return 1;
                     case ConsoleKey.NumPad2:
-                        players = 2;
-                        break;
+                        return 2;
                     case ConsoleKey.NumPad3:
-                        players = 3;
-                        break;
+                        return 3;
                     case ConsoleKey.NumPad4:
-                        players = 4;
-                        break;
+                        return 4;
                 }
             }
-            catch (ExternalException)
-            { }
-            return players;
         }
+
         private static Coordinates? GetRect(LogManager log, RECT rectangle)
         {
             int sizeX = rectangle.right - rectangle.left;
@@ -55,7 +37,9 @@ namespace Senrihin_no_Kakuhoki
 
             log.DisplayMessage(LogManager.LogLevel.Debug, "Window position: (" + rectangle.left + ";" + rectangle.top + "), window size: (" + sizeX + ";" + sizeY + ")");
 
-            int Players = GetPlayers(log);
+            int players = GetPlayers(log);
+
+            log.DisplayMessage(LogManager.LogLevel.Info, "There are " + players + " player(s) in your session.");
             Coordinates Coords;
 
             try
@@ -67,7 +51,7 @@ namespace Senrihin_no_Kakuhoki
                 Coords.Width = Coords.EndX - Coords.StartX;
                 Coords.Height = Coords.EndY - Coords.StartY;
                 Coords.SingleWidth = (int)((Coords.EndX - Coords.StartX) / 4.00);
-                Coords.PlayerNum = Players;
+                Coords.PlayerNum = players;
                 int middle = (int)((Coords.EndX - Coords.StartX) / 2.00);
                 Coords.RealStartX = (middle - (int)(Coords.SingleWidth * Coords.PlayerNum / 2.00));
 
@@ -79,14 +63,13 @@ namespace Senrihin_no_Kakuhoki
             { }
             return null;
         }
+
         private static void OpenImage(string pathToFile)
         {
-            Process imageViewer = new Process();
-            imageViewer.StartInfo.FileName = @"C:\WINDOWS\system32\mspaint.exe";
-            imageViewer.StartInfo.Arguments = pathToFile;
-            imageViewer.Start();
+            Process.Start("mspaint", pathToFile);
         }
-        private static void createAndReadImage(LogManager log, IntPtr gameWindow, Coordinates Coords)
+
+        private static void CreateAndReadImage(LogManager log, IntPtr gameWindow, Coordinates Coords)
         {
             int scale = 2;
             try
@@ -99,7 +82,7 @@ namespace Senrihin_no_Kakuhoki
                 gfxBmp.ReleaseHdc(hdcBitmap);
                 gfxBmp.Dispose();
 
-                log.DisplayMessage(LogManager.LogLevel.Debug, "this is a debug test message");
+                log.DisplayMessage(LogManager.LogLevel.Debug, "Base bitmap file created");
 
                 Bitmap imageToResize = bmpImage.Clone(new Rectangle(Coords.StartX, Coords.StartY, Coords.Width, Coords.Height), PixelFormat.Format32bppArgb);
                 imageToResize.Save("Sample.bmp");
@@ -117,7 +100,9 @@ namespace Senrihin_no_Kakuhoki
                 }
             }
             catch (ExternalException)
-            { }
+            {
+                log.DisplayMessage(LogManager.LogLevel.Debug, "ExternalException thrown");
+            }
         }
         private static void Main(string[] args)
         {
@@ -144,9 +129,9 @@ namespace Senrihin_no_Kakuhoki
 
             var Coordinates = GetRect(log, rectangle);
             if (Coordinates != null)
-                createAndReadImage(log, gameWindow, (Coordinates)Coordinates);
-            while(true)
-                Thread.Sleep(15000);
+                CreateAndReadImage(log, gameWindow, Coordinates.Value);
+            Console.WriteLine("Press enter to exit");
+            Console.ReadLine();
         }
 
         [DllImport("user32.dll")]
