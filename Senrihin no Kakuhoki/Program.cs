@@ -1,10 +1,10 @@
-﻿using IronOcr;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Tesseract;
 
 namespace Senrihin_no_Kakuhoki
 {
@@ -74,7 +74,6 @@ namespace Senrihin_no_Kakuhoki
             int scale = 2;
             try
             {
-                AutoOcr ocr = new AutoOcr();
                 Bitmap bmpImage = new Bitmap(Coords.EndX, Coords.EndY, PixelFormat.Format32bppArgb);
                 Graphics gfxBmp = Graphics.FromImage(bmpImage);
                 IntPtr hdcBitmap = gfxBmp.GetHdc();
@@ -95,7 +94,16 @@ namespace Senrihin_no_Kakuhoki
                 {
                     pathToImage = "SampleOCR." + (i + 1) + ".bmp";
                     imageToOCR.Clone(new Rectangle(Coords.SingleWidth * i * scale, 0, (Coords.SingleWidth * scale) - 1, Coords.Height * scale), PixelFormat.Format32bppArgb).Save(pathToImage);
-                    log.DisplayMessage(LogManager.LogLevel.Debug, "Text found on image number" + (i + 1) + ": " + ocr.Read(pathToImage).Text);
+                    using (var engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default))
+                    {
+                        using (var img = Pix.LoadFromFile(pathToImage))
+                        {
+                            using (var page = engine.Process(img))
+                            {
+                                log.DisplayMessage(LogManager.LogLevel.Debug, "Text found on image number" + (i + 1) + ": " + page.GetText());
+                            }
+                        }
+                    }
                     OpenImage(pathToImage);
                 }
             }
